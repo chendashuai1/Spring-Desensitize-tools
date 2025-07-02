@@ -25,13 +25,21 @@ public class SensitiveBeanSerializerModifier extends BeanSerializerModifier {
             return beanProperties;
         for (BeanPropertyWriter beanPropertyWriter : beanProperties) {
             Sensitive annotation = beanPropertyWriter.getAnnotation(Sensitive.class);
-            if(annotation == null) continue;
+            if (annotation == null) {
+                continue;
+            }
             DesensitizeStrategy strategy = DesensitizeStrategyFactory.getStrategy(annotation.strategy());
-            if(strategy == null) continue;
+            if (strategy == null) {
+                throw new RuntimeException("Invalid strategy: " + annotation.strategy());
+            }
             beanPropertyWriter.assignSerializer(new JsonSerializer<Object>() {
                 @Override
                 public void serialize(Object value, JsonGenerator gen, SerializerProvider sp) throws IOException, JsonProcessingException {
-                    gen.writeString(strategy.desensitize((String) value));
+                    if (value instanceof String) {
+                        gen.writeString(strategy.desensitize((String) value));
+                    } else {
+                        throw new RuntimeException("Unsupported value type for desensitization: " + value.getClass().getName());
+                    }
                 }
             });
         }

@@ -22,10 +22,10 @@ public class DesensitizeConverter extends ClassicConverter {
     }
 
     private boolean buildPattern() {
-        if(DesensitizeStrategyFactory.keys == null)
+        if (DesensitizeStrategyFactory.keys == null)
             return false;
         String regex = Arrays.stream(DesensitizeStrategyFactory.keys)
-                //.map(Pattern::quote)
+                .map(Pattern::quote)
                 .map(key -> "(" + key + ")([=:：]\\s*[\"']?)([^,&\\s\"']+)")
                 .collect(Collectors.joining("|"));
         count = DesensitizeStrategyFactory.getCounts();
@@ -33,25 +33,25 @@ public class DesensitizeConverter extends ClassicConverter {
         return true;
     }
 
-    private String processMessage(String message){
-        if(!DesensitizeStrategyFactory.enabled || (this.pattern == null && !buildPattern())){
+    private String processMessage(String message) {
+        if (message == null || !DesensitizeStrategyFactory.enabled || (this.pattern == null && !buildPattern())) {
             return message;
         }
         Matcher matcher = pattern.matcher(message);
         StringBuffer result = new StringBuffer();
         while (matcher.find()) {
             int i = 1;
-            while(i < count * 3 && matcher.group(i) == null){
+            while (i < count * 3 && matcher.group(i) == null) {
                 i += 3;
             }
-            if(matcher.group(i) == null) {
+            if (i > count * 3) {
                 continue;
             }
             String fullKey = matcher.group(i);
             String separator = matcher.group(i + 1);
             String originalValue = matcher.group(i + 2);
             DesensitizeStrategy strategy = DesensitizeStrategyFactory.getStrategy(fullKey);
-            if(strategy == null) {
+            if (strategy == null) {
                 continue;
             }
             String replacement = strategy.desensitize(originalValue);

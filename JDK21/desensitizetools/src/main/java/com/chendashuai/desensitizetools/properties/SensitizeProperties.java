@@ -12,6 +12,7 @@ import java.util.Map;
 public class SensitizeProperties {
     private boolean enabled = true;
     private final PatternProperties patterns = new PatternProperties();
+
     @Data
     public static class PatternProperties {
         private Map<String, String> rules = new LinkedHashMap<>();
